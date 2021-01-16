@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\LyraNebula\Nebula\Store\NodeViewUseCase\NodeViewState.cs" Link="NodeViewState.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Converto" Version="2.1.0" />
+    <PackageReference Include="IP-2-Country" Version="2.0.1" />
+    <PackageReference Include="IP-2-Country.DataSources.CSVFile" Version="1.0.8" />
+    <PackageReference Include="IP-2-Country.MarkusGo" Version="1.0.6" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+    <PackageReference Include="MongoDB.Bson" Version="2.11.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Lyra.Data">
+      <HintPath>..\..\LyraNetwork\Core\Lyra.Data\bin\Debug\netstandard2.0\Lyra.Data.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
