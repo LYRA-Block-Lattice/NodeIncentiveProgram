@@ -20,6 +20,8 @@ namespace NodeIncentiveProgram
             var httpClientHandler = new HttpClientHandler();
             _client = new HttpClient(httpClientHandler);
             var url = "https://blockexplorer.testnet.lyra.live/api/nebula/";
+            if (networkId == "mainnet")
+                url = "https://nebula.lyra.live/api/nebula/";
             _client.BaseAddress = new Uri(url);
             //_client.DefaultRequestHeaders.Accept.Clear();
             //_client.DefaultRequestHeaders.Accept.Add(
@@ -27,7 +29,7 @@ namespace NodeIncentiveProgram
             //#if DEBUG
             //            _client.Timeout = new TimeSpan(0, 0, 30);
             //#else
-            _client.Timeout = new TimeSpan(0, 0, 15);
+            _client.Timeout = new TimeSpan(0, 1, 0);
             //#endif
 
             _cancel = new CancellationTokenSource();

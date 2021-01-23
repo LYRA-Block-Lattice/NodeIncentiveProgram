@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NodeIncentiveProgram": {
+      "commandName": "Project",
+      "commandLineArgs": "mainnet"
+    }
+  }
+}
