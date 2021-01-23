@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using LiteDB;
 using Lyra.Core.Accounts;
 using Lyra.Core.API;
 
@@ -9,18 +11,17 @@ namespace NodeIncentiveProgram
 {
     public class IncentivePayer
     {
-        private string _networkId;
-        public IncentivePayer(string networkId)
+        public IncentivePayer()
         {
-            _networkId = networkId;
+
         }
 
         public async System.Threading.Tasks.Task RunPayAsync()
         {
-            string lyrawalletfolder = Wallet.GetFullFolderName(_networkId, "wallets");
+            string lyrawalletfolder = Wallet.GetFullFolderName("mainnet", "wallets");
             var walletStore = new SecuredWalletStore(lyrawalletfolder);
             var incWallet = Wallet.Open(walletStore, "incentive", "");
-            var client = LyraRestClient.Create(_networkId, "", "", "");
+            var client = LyraRestClient.Create("mainnet", "", "", "");
             var syncResult = await incWallet.Sync(client);
             if (syncResult != Lyra.Core.Blocks.APIResultCodes.Success)
             {
@@ -30,19 +31,85 @@ namespace NodeIncentiveProgram
 
             Console.WriteLine($"Incentive wallet {incWallet.AccountId} balance: {incWallet.BaseBalance}\n");
 
+            var incPay = new IncPayment();
+            incPay.TimeStamp = DateTime.UtcNow;
+
+            incPay.MainnetNodes = await GetStatusFromNetworkAsync("mainnet");
+            incPay.TestnetNodes = await GetStatusFromNetworkAsync("testnet");
+
+            var dbfn = @"C:\Users\Wizard\OneDrive\dev\lyra\Programs\IncProgram.db";
+            using (var db = new LiteDatabase(dbfn))
+            {
+                var coll = db.GetCollection<IncPayment>("IncPay");                
+                coll.Insert(incPay);                
+
+                var index = 1;
+                Console.WriteLine("index SuccessPaid Rito NetworkId AccountId OfflineCount FullyUpgraded IsPrimary PosVotes SharedIP");
+                decimal totalPayment = 0m;
+                decimal package = 500m;
+
+                foreach(var nodes in new[] { incPay.MainnetNodes, incPay.TestnetNodes })
+                foreach (var node in nodes)
+                {
+                    await PayNodeAsync(incWallet, node, package);
+                    if(node.SuccessPaid)
+                        totalPayment += node.PaidAmount;
+
+                    var resultStr = node.SuccessPaid ? "Paid" : "Failed";
+                    Console.WriteLine($"No. {index} {resultStr} {node.PaidAmount:n} LYR to {node.NetworkId} {node.AccountId.Substring(0, 10)}... {node.OfflineCount} {node.FullyUpgraded} {node.IsPrimary} {node.PosVotes} {node.SharedIp}");
+                    index++;
+
+                    coll.Update(incPay);
+                }
+
+                Console.WriteLine($"Total payment: {totalPayment:n} LYR");
+            }            
+        }
+
+        private async System.Threading.Tasks.Task PayNodeAsync(Wallet wallet, XStatus node, decimal package)
+        {
+            try
+            {
+                var amount = package * node.GetRito();
+
+                if (amount <= 0)
+                {
+                    amount = 1;
+                }
+
+                node.PaidAmount = amount;
+
+                var result = await wallet.Send(amount, node.AccountId);
+                if (result.ResultCode != Lyra.Core.Blocks.APIResultCodes.Success)
+                {
+                    await Task.Delay(10000);
+                    result = await wallet.Send(amount, node.AccountId);
+                }
+
+                node.SuccessPaid = result.ResultCode == Lyra.Core.Blocks.APIResultCodes.Success;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Error!!! {ex.Message}");
+                node.SuccessPaid = false;
+            }                       
+        }
+
+        private async System.Threading.Tasks.Task<List<XStatus>> GetStatusFromNetworkAsync(string networkId)
+        {
             Console.WriteLine($"Getting history data from nebula...");
-            var lr = new LogReader(_networkId);
+            var lr = new LogReader(networkId);
             var hist = (await lr.GetHistoryAsync())
                 .Where(x => x.TimeStamp > DateTime.UtcNow.AddDays(-1))
                 .ToList();
 
             // first get all accounts
             var allAccounts = hist.SelectMany(x => x.nodeStatus.Keys).Distinct().ToList();
-            Console.WriteLine($"Got {hist.Count()} history entry for {_networkId}. Unique account {allAccounts.Count()}");
+            Console.WriteLine($"Got {hist.Count()} history entry for {networkId}. Unique account {allAccounts.Count()}");
 
             var count = hist.Count;
             var statusList = new List<XStatus>();
-            foreach(var acct in allAccounts)
+            foreach (var acct in allAccounts)
             {
                 var lastState = hist.Last(x => x.nodeStatus.ContainsKey(acct))
                     .nodeStatus[acct];
@@ -56,7 +123,7 @@ namespace NodeIncentiveProgram
 
                 var xs = new XStatus
                 {
-                    NetworkId = _networkId,
+                    NetworkId = networkId,
                     AccountId = acct,
                     OfflineCount = count - hist.Count(x => x.nodeStatus.ContainsKey(acct)),
                     FullyUpgraded = lastState.Status.version == LyraGlobal.NodeAppName,
@@ -70,22 +137,7 @@ namespace NodeIncentiveProgram
                 statusList.Add(xs);
             }
 
-            var index = 1;
-            Console.WriteLine("index NetworkId AccountId OfflineCount FullyUpgraded IsPrimary PosVotes ");
-            foreach (var node in statusList)
-            {
-                Console.WriteLine($"No. {index} {Math.Round(node.GetRito() * 100,4):n} {node.NetworkId} {node.AccountId.Substring(0, 10)} {node.OfflineCount} {node.FullyUpgraded} {node.IsPrimary} {node.PosVotes} {node.SharedIp}");
-                index++;
-                //var result = await incWallet.Send(100m, node.Key);
-                //if(result.ResultCode != Lyra.Core.Blocks.APIResultCodes.Success)
-                //{
-                //    Console.WriteLine($"{result.ResultCode} Send to {node.Key}");
-                //    Console.WriteLine($"Retrying...");
-                //    result = await incWallet.Send(100m, node.Key);
-                //}
-
-                //Console.WriteLine($"{result.ResultCode} Send to {node.Key}");
-            }
+            return statusList;
         }
     }
 }

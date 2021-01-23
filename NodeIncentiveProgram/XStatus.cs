@@ -15,6 +15,9 @@ namespace NodeIncentiveProgram
         public bool IsPrimary { get; set; }
         public bool SharedIp { get; set; }
 
+        public bool SuccessPaid { get; set; }
+        public decimal PaidAmount { get; set; }
+
         public decimal GetRito()
         {
             var rito = 1m;

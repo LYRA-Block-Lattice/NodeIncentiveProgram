@@ -15,7 +15,7 @@ namespace NodeIncentiveProgram
             var networkId = args[0];
             Console.WriteLine($"Beginning incentive program for {networkId}...");
 
-            var inc = new IncentivePayer(networkId);
+            var inc = new IncentivePayer();
             await inc.RunPayAsync();
         }
     }
