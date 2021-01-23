@@ -29,7 +29,7 @@ namespace NodeIncentiveProgram
             //#if DEBUG
             //            _client.Timeout = new TimeSpan(0, 0, 30);
             //#else
-            _client.Timeout = new TimeSpan(0, 1, 0);
+            _client.Timeout = new TimeSpan(0, 3, 0);        // work for large history data.
             //#endif
 
             _cancel = new CancellationTokenSource();

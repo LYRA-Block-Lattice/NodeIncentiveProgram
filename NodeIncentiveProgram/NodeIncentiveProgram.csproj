@@ -14,6 +14,7 @@
     <PackageReference Include="IP-2-Country" Version="2.0.1" />
     <PackageReference Include="IP-2-Country.DataSources.CSVFile" Version="1.0.8" />
     <PackageReference Include="IP-2-Country.MarkusGo" Version="1.0.6" />
+    <PackageReference Include="Lyra.Data" Version="2.0.3" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="MongoDB.Bson" Version="2.11.5" />
   </ItemGroup>
