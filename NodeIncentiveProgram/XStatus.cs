@@ -14,5 +14,37 @@ namespace NodeIncentiveProgram
         public decimal PosVotes { get; set; }
         public bool IsPrimary { get; set; }
         public bool SharedIp { get; set; }
+
+        public decimal GetRito()
+        {
+            var rito = 1m;
+
+            if (NetworkId == "testnet")
+            {
+                rito *= 0.3m;
+                return rito;
+            }                
+
+            for (var i = 0; i < OfflineCount; i++)
+                rito *= 0.7m;
+
+            if (!FullyUpgraded)
+                rito *= 0.5m;
+
+            if (IsPrimary)
+                rito *= 1.3m;
+
+            if (SharedIp)
+                rito *= 0.1m;
+
+            if (PosVotes > 1000000)
+                rito *= 2m;
+            else if (PosVotes < 100000)
+                rito *= 1.05m;
+            else
+                rito *= 1.3m;
+
+            return rito > 0m ? rito : 0m;
+        }
     }
 }

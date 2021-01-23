@@ -59,7 +59,7 @@ namespace NodeIncentiveProgram
                     NetworkId = _networkId,
                     AccountId = acct,
                     OfflineCount = count - hist.Count(x => x.nodeStatus.ContainsKey(acct)),
-                    FullyUpgraded = lastState.Status.version == LyraGlobal.NODE_VERSION.ToString(),
+                    FullyUpgraded = lastState.Status.version == LyraGlobal.NodeAppName,
                     IsPrimary = lastBB.PrimaryAuthorizers.Contains(acct),
                     PosVotes = lastInBB == null ? 0 : lastInBB.Votes,
                     SharedIp = hist.Last(x => x.nodeStatus.ContainsKey(acct))
@@ -74,7 +74,7 @@ namespace NodeIncentiveProgram
             Console.WriteLine("index NetworkId AccountId OfflineCount FullyUpgraded IsPrimary PosVotes ");
             foreach (var node in statusList)
             {
-                Console.WriteLine($"No. {index} {node.NetworkId} {node.AccountId.Substring(0, 10)} {node.OfflineCount} {node.FullyUpgraded} {node.IsPrimary} {node.PosVotes} {node.SharedIp}");
+                Console.WriteLine($"No. {index} {Math.Round(node.GetRito() * 100,4):n} {node.NetworkId} {node.AccountId.Substring(0, 10)} {node.OfflineCount} {node.FullyUpgraded} {node.IsPrimary} {node.PosVotes} {node.SharedIp}");
                 index++;
                 //var result = await incWallet.Send(100m, node.Key);
                 //if(result.ResultCode != Lyra.Core.Blocks.APIResultCodes.Success)
