@@ -14,6 +14,7 @@ namespace NodeIncentiveProgram
         public decimal PosVotes { get; set; }
         public bool IsPrimary { get; set; }
         public bool SharedIp { get; set; }
+        public bool IsDbConsist { get; set; }
 
         public bool SuccessPaid { get; set; }
         public decimal PaidAmount { get; set; }
@@ -38,6 +39,9 @@ namespace NodeIncentiveProgram
                 rito *= 1.3m;
 
             if (SharedIp)
+                rito *= 0.1m;
+
+            if (!IsDbConsist)
                 rito *= 0.1m;
 
             if (PosVotes > 1000000)

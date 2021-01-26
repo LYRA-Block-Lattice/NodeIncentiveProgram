@@ -72,7 +72,7 @@ namespace NodeIncentiveProgram
             {
                 var amount = package * node.GetRito();
 
-                if (amount <= 0)
+                if (amount < 1)
                 {
                     amount = 1;
                 }
@@ -120,7 +120,6 @@ namespace NodeIncentiveProgram
                 var lastBB = hist.Last().bb;
                 var lastInBB = lastBB.ActiveNodes.FirstOrDefault(x => x.AccountID == acct);
 
-
                 var xs = new XStatus
                 {
                     NetworkId = networkId,
@@ -133,6 +132,10 @@ namespace NodeIncentiveProgram
                         .bb.NodeAddresses.Count(x => x.Value == hist.Last(x => x.nodeStatus.ContainsKey(acct))
                         .bb.NodeAddresses[acct]) > 1
                 };
+
+                // add db consist check
+                xs.IsDbConsist = (lastState.Status.state == Lyra.Data.API.BlockChainState.Almighty
+                    || lastState.Status.state == Lyra.Data.API.BlockChainState.Engaging);
 
                 statusList.Add(xs);
             }
