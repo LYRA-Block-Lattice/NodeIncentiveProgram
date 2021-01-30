@@ -31,16 +31,46 @@ namespace NodeIncentiveProgram
 
             Console.WriteLine($"Incentive wallet {incWallet.AccountId} balance: {incWallet.BaseBalance}\n");
 
-            var incPay = new IncPayment();
-            incPay.TimeStamp = DateTime.UtcNow;
-
-            incPay.MainnetNodes = await GetStatusFromNetworkAsync("mainnet");
-            incPay.TestnetNodes = await GetStatusFromNetworkAsync("testnet");
-
+            // first lookup for failed payments
             var dbfn = @"C:\Users\Wizard\OneDrive\dev\lyra\Programs\IncProgram.db";
             using (var db = new LiteDatabase(dbfn))
             {
-                var coll = db.GetCollection<IncPayment>("IncPay");                
+                var coll = db.GetCollection<IncPayment>("IncPay");
+                var lastPay = coll.FindOne(Query.All(Query.Descending));
+
+                async Task FixFailedPay()
+                {
+                    while (true)
+                    {
+                        foreach (var nodes in new[] { lastPay.MainnetNodes, lastPay.TestnetNodes })
+                        {
+                            if (nodes.Count(x => !x.SuccessPaid) == 0)
+                            {
+                                Console.WriteLine("No fix needed.");
+                                return;
+                            }
+
+                            foreach (var node in nodes)
+                            {
+                                if (!node.SuccessPaid)
+                                {
+                                    Console.WriteLine($"fix failed pay for {node.AccountId} amont {node.PaidAmount}");
+                                    await PayNodeAsync(incWallet, node, 0);
+                                    coll.Update(lastPay);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                await FixFailedPay();
+
+                var incPay = new IncPayment();
+                incPay.TimeStamp = DateTime.UtcNow;
+
+                incPay.MainnetNodes = await GetStatusFromNetworkAsync("mainnet");
+                incPay.TestnetNodes = await GetStatusFromNetworkAsync("testnet");
+          
                 coll.Insert(incPay);                
 
                 var index = 1;
@@ -70,20 +100,23 @@ namespace NodeIncentiveProgram
         {
             try
             {
-                var amount = package * node.GetRito();
-
-                if (amount < 1)
+                if(package != 0)
                 {
-                    amount = 1;
+                    var amount = package * node.GetRito();
+
+                    if (amount < 1)
+                    {
+                        amount = 1;
+                    }
+
+                    node.PaidAmount = amount;
                 }
 
-                node.PaidAmount = amount;
-
-                var result = await wallet.Send(amount, node.AccountId);
+                var result = await wallet.Send(node.PaidAmount, node.AccountId);
                 if (result.ResultCode != Lyra.Core.Blocks.APIResultCodes.Success)
                 {
                     await Task.Delay(10000);
-                    result = await wallet.Send(amount, node.AccountId);
+                    result = await wallet.Send(node.PaidAmount, node.AccountId);
                 }
 
                 node.SuccessPaid = result.ResultCode == Lyra.Core.Blocks.APIResultCodes.Success;
