@@ -38,6 +38,8 @@ namespace NodeIncentiveProgram
                 var coll = db.GetCollection<IncPayment>("IncPay");
                 var lastPay = coll.FindOne(Query.All(Query.Descending));
 
+                Console.WriteLine($"Last payment time (UTC): {lastPay.TimeStamp}");
+
                 async Task FixFailedPay()
                 {
                     while (true)
@@ -158,7 +160,7 @@ namespace NodeIncentiveProgram
                     NetworkId = networkId,
                     AccountId = acct,
                     OfflineCount = count - hist.Count(x => x.nodeStatus.ContainsKey(acct)),
-                    FullyUpgraded = lastState.Status.version == LyraGlobal.NodeAppName,
+                    FullyUpgraded = CompareVersion(lastState.Status.version, LyraGlobal.NodeAppName),
                     IsPrimary = lastBB.PrimaryAuthorizers.Contains(acct),
                     PosVotes = lastInBB == null ? 0 : lastInBB.Votes,
                     SharedIp = hist.Last(x => x.nodeStatus.ContainsKey(acct))
@@ -174,6 +176,13 @@ namespace NodeIncentiveProgram
             }
 
             return statusList;
+        }
+
+        private bool CompareVersion(string s1, string s2)
+        {
+            // LYRA Block Lattice 2.1.0.0
+            // ommit smallest one
+            return s1.Substring(0, s1.Length - 2) == s2.Substring(0, s2.Length - 2);
         }
     }
 }
