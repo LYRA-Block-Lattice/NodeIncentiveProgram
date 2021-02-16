@@ -36,12 +36,13 @@ namespace NodeIncentiveProgram
             using (var db = new LiteDatabase(dbfn))
             {
                 var coll = db.GetCollection<IncPayment>("IncPay");
-                var lastPay = coll.FindOne(Query.All(Query.Descending));
-
-                Console.WriteLine($"Last payment time (UTC): {lastPay.TimeStamp}");
 
                 async Task FixFailedPay()
                 {
+                    var lastPay = coll.FindOne(Query.All(Query.Descending));
+
+                    Console.WriteLine($"Last payment time (UTC): {lastPay.TimeStamp}");
+
                     while (true)
                     {
                         foreach (var nodes in new[] { lastPay.MainnetNodes, lastPay.TestnetNodes })
@@ -95,6 +96,10 @@ namespace NodeIncentiveProgram
                 }
 
                 Console.WriteLine($"Total payment: {totalPayment:n} LYR");
+
+                await Task.Delay(60 * 1000);
+
+                await FixFailedPay();
             }            
         }
 
