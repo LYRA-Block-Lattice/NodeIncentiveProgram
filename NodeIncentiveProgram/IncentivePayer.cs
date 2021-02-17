@@ -122,8 +122,11 @@ namespace NodeIncentiveProgram
                 var result = await wallet.Send(node.PaidAmount, node.AccountId);
                 if (result.ResultCode != Lyra.Core.Blocks.APIResultCodes.Success)
                 {
+                    Console.WriteLine($"Failed to send: {result.ResultCode}");
                     await Task.Delay(10000);
+                    await wallet.Sync(null);
                     result = await wallet.Send(node.PaidAmount, node.AccountId);
+                    Console.WriteLine($"Retry result: {result.ResultCode}");
                 }
 
                 node.SuccessPaid = result.ResultCode == Lyra.Core.Blocks.APIResultCodes.Success;
