@@ -25,7 +25,7 @@ namespace NodeIncentiveProgram
 
             if (NetworkId == "testnet")
             {
-                rito *= 3m;
+                rito *= 1.875m;
                 return rito;
             }                
 

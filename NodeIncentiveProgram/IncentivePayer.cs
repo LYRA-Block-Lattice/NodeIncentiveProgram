@@ -79,7 +79,7 @@ namespace NodeIncentiveProgram
                 var index = 1;
                 Console.WriteLine("index SuccessPaid Rito NetworkId AccountId OfflineCount FullyUpgraded IsPrimary PosVotes SharedIP");
                 decimal totalPayment = 0m;
-                decimal package = 500m;
+                decimal package = 800m;
 
                 foreach(var nodes in new[] { incPay.MainnetNodes, incPay.TestnetNodes })
                 foreach (var node in nodes)
