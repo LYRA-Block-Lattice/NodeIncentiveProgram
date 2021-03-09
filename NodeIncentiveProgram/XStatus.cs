@@ -25,7 +25,10 @@ namespace NodeIncentiveProgram
 
             if (NetworkId == "testnet")
             {
-                rito *= 1.875m;
+                if (!IsDbConsist)
+                    rito *= 0.2m;
+                else
+                    rito *= 1.875m;
                 return rito;
             }                
 
