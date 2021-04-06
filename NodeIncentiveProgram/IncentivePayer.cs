@@ -190,7 +190,7 @@ namespace NodeIncentiveProgram
         {
             // LYRA Block Lattice 2.1.0.0
             // ommit smallest one
-            return s1.Substring(0, s1.Length - 2) == s2.Substring(0, s2.Length - 2);
+            return s1.Substring(0, s1.Length - 3) == s2.Substring(0, s2.Length - 3);
         }
     }
 }
