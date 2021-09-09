@@ -8,8 +8,14 @@ namespace NodeIncentiveProgram
         {              
             Console.WriteLine($"Beginning incentive program...");
 
-            var inc = new IncentivePayer();
-            await inc.RunPayAsync();
+            //var inc = new IncentivePayer();
+            //await inc.RunPayAsync();
+
+            var sch = new IncentiveScheduler("devnet");
+            await sch.InitJobSchedulerAsync();
+
+            Console.WriteLine("Press Enter to exit.");
+            Console.ReadLine();
         }
     }
 }

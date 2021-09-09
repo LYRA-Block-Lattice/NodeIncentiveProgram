@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Lyra.Core.API;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
 using System;
@@ -7,20 +8,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lyra.Core.Decentralize
+namespace NodeIncentiveProgram
 {
-    /* The task scheduler for consensus network
+    /* The task scheduler for incentive program
      * 
-     * every 100 ms: check block consensus timeout
-     * every even 2s: check leader tasks (cons, svc queue)
-     * every even 1m0s: 
-     * every even 10m0s: check new player or wellcome them to join
+     * 
      */
-    public partial class ConsensusService
+    public partial class IncentiveScheduler
     {
         private IScheduler _sched;
+        private string _network;
+
+        public IncentiveScheduler(string network)
+        {
+            _network = network;
+        }
         // Init the scheduler
-        private async Task InitJobSchedulerAsync()
+        public async Task InitJobSchedulerAsync()
         {
             if (_sched != null)
                 return;
@@ -30,16 +34,16 @@ namespace Lyra.Core.Decentralize
             // First we must get a reference to a scheduler
             ISchedulerFactory sf = new StdSchedulerFactory();
             _sched = await sf.GetScheduler();
-            _sched.Context.Add("cs", this);
+            _sched.Context.Add("ic", this);
 
             // computer a time that is on the next round minute
             DateTimeOffset runTime = DateBuilder.EvenMinuteDate(DateTimeOffset.UtcNow);
 
             // define the jobs
-            var jobGroup = "consensus service jobs";
+            var jobGroup = "inc jobs";
 
             // Tell quartz to schedule the job using our trigger
-            await CreateJobAsync(TimeSpan.FromSeconds(24), typeof(HeartBeater), "Heart Beat", jobGroup);
+            await CreateJobAsync(TimeSpan.FromMinutes(2), typeof(PayNodes), "Pay staking nodes", jobGroup);
             //await CreateJobAsync(TimeSpan.FromMilliseconds(100), typeof(BlockAuthorizationMonitor), "Block Monitor", jobGroup);
             //await CreateJobAsync("0/2 * * * * ?", typeof(LeaderTaskMonitor), "Leader Monitor", jobGroup);
 
@@ -62,21 +66,34 @@ namespace Lyra.Core.Decentralize
 
         // jobs
         [DisallowConcurrentExecution]
-        private class HeartBeater : IJob
+        private class PayNodes : IJob
         {
             public async Task Execute(IJobExecutionContext context)
             {
                 try
                 {
-                    //if (Neo.Settings.Default.LyraNode.Lyra.Mode == Data.Utils.NodeMode.Normal)
-                    //{
-                    //    var cs = context.Scheduler.Context.Get("cs") as ConsensusService;
-                    //    await cs.HeartBeatAsync();
-                    //}
-                }
-                catch(Exception)
-                {
+                    var ic = context.Scheduler.Context.Get("ic") as IncentiveScheduler;
+                    var client = LyraRestClient.Create(ic._network, "Win", "IncProg", "1.0");
+                    var bb = await client.GetBillBoardAsync();
 
+                    if(bb.ActiveNodes.Any())
+                    {
+                        var wallet = new IncWallet(ic._network, "incentive", "");
+                        await wallet.OpenAsync();
+
+                        var amount = 10;
+
+                        foreach(var node in bb.ActiveNodes)
+                        {
+                            Console.WriteLine($"Pay {amount} to {node.AccountID}");
+
+                            await wallet.PayAsync(node.AccountID, amount);
+                        }
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Error paying: {ex}");
                 }
             }
         }
