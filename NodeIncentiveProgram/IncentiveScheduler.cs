@@ -43,7 +43,7 @@ namespace NodeIncentiveProgram
             var jobGroup = "inc jobs";
 
             // Tell quartz to schedule the job using our trigger
-            await CreateJobAsync(TimeSpan.FromMinutes(2), typeof(PayNodes), "Pay staking nodes", jobGroup);
+            await CreateJobAsync(TimeSpan.FromMinutes(5), typeof(PayNodes), "Pay staking nodes", jobGroup);
             //await CreateJobAsync(TimeSpan.FromMilliseconds(100), typeof(BlockAuthorizationMonitor), "Block Monitor", jobGroup);
             //await CreateJobAsync("0/2 * * * * ?", typeof(LeaderTaskMonitor), "Leader Monitor", jobGroup);
 
