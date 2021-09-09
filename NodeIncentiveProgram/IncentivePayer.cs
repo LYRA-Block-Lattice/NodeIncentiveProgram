@@ -22,7 +22,7 @@ namespace NodeIncentiveProgram
             var walletStore = new SecuredWalletStore(lyrawalletfolder);
             var incWallet = Wallet.Open(walletStore, "incentive", "");
             var client = LyraRestClient.Create("mainnet", "", "", "");
-            var syncResult = await incWallet.Sync(client);
+            var syncResult = await incWallet.SyncAsync(client);
             if (syncResult != Lyra.Core.Blocks.APIResultCodes.Success)
             {
                 Console.WriteLine("Can't sync wallet!");
@@ -119,13 +119,13 @@ namespace NodeIncentiveProgram
                     node.PaidAmount = amount;
                 }
 
-                var result = await wallet.Send(node.PaidAmount, node.AccountId);
+                var result = await wallet.SendAsync(node.PaidAmount, node.AccountId);
                 if (result.ResultCode != Lyra.Core.Blocks.APIResultCodes.Success)
                 {
                     Console.WriteLine($"Failed to send: {result.ResultCode}");
                     await Task.Delay(10000);
-                    await wallet.Sync(null);
-                    result = await wallet.Send(node.PaidAmount, node.AccountId);
+                    await wallet.SyncAsync(null);
+                    result = await wallet.SendAsync(node.PaidAmount, node.AccountId);
                     Console.WriteLine($"Retry result: {result.ResultCode}");
                 }
 
