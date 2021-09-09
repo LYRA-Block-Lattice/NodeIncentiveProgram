@@ -19,7 +19,7 @@ namespace NodeIncentiveProgram
         {
             var httpClientHandler = new HttpClientHandler();
             _client = new HttpClient(httpClientHandler);
-            var url = "https://blockexplorer.testnet.lyra.live/api/nebula/";
+            var url = "https://nebulatestnet.lyra.live/api/nebula/";
             if (networkId == "mainnet")
                 url = "https://nebula.lyra.live/api/nebula/";
             _client.BaseAddress = new Uri(url);
