@@ -66,7 +66,7 @@ namespace NodeIncentiveProgram
                     }
                 }
 
-                await FixFailedPay();
+                //await FixFailedPay();
 
                 var incPay = new IncPayment();
                 incPay.TimeStamp = DateTime.UtcNow;
