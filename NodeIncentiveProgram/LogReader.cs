@@ -37,10 +37,10 @@ namespace NodeIncentiveProgram
 
         public async Task<IEnumerable<NodeViewState>> GetHistoryAsync()
         {
-            return await Get<IEnumerable<NodeViewState>>("history", null);
+            return await GetAsync<IEnumerable<NodeViewState>>("history", null);
         }
 
-        private async Task<T> Get<T>(string action, Dictionary<string, string> args)
+        private async Task<T> GetAsync<T>(string action, Dictionary<string, string> args)
         {
             var url = $"{action}/?" + args?.Aggregate(new StringBuilder(),
                           (sb, kvp) => sb.AppendFormat("{0}{1}={2}",
