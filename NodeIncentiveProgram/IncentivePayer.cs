@@ -45,7 +45,7 @@ namespace NodeIncentiveProgram
 
                     while (true)
                     {
-                        foreach (var nodes in new[] { lastPay.MainnetNodes, lastPay.TestnetNodes })
+                        foreach (var nodes in new[] { lastPay.MainnetNodes/*, lastPay.TestnetNodes*/ })
                         {
                             if (nodes.Count(x => !x.SuccessPaid) == 0)
                             {
@@ -72,7 +72,7 @@ namespace NodeIncentiveProgram
                 incPay.TimeStamp = DateTime.UtcNow;
 
                 incPay.MainnetNodes = await GetStatusFromNetworkAsync("mainnet");
-                incPay.TestnetNodes = await GetStatusFromNetworkAsync("testnet");
+                //incPay.TestnetNodes = await GetStatusFromNetworkAsync("testnet");
           
                 coll.Insert(incPay);                
 
@@ -81,7 +81,7 @@ namespace NodeIncentiveProgram
                 decimal totalPayment = 0m;
                 decimal package = 400m;
 
-                foreach(var nodes in new[] { incPay.MainnetNodes, incPay.TestnetNodes })
+                foreach(var nodes in new[] { incPay.MainnetNodes/*, incPay.TestnetNodes*/ })
                 foreach (var node in nodes)
                 {
                     await PayNodeAsync(incWallet, node, package);
